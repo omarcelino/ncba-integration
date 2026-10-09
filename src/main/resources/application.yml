@@ -1,0 +1,28 @@
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/countrydb}
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:root}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+  cache:
+    cache-names: isoCodes
+    caffeine:
+      spec: maximumSize=500,expireAfterWrite=24h
+
+soap:
+  url: ${SOAP_URL:http://webservices.oorsprong.org/websamples.countryinfo/CountryInfoService.wso}
+  connect-timeout-ms: ${SOAP_CONNECT_TIMEOUT:3000}
+  read-timeout-ms: ${SOAP_READ_TIMEOUT:5000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
