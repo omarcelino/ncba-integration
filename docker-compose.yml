@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8
+    container_name: ncba-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: countrydb
+      MYSQL_CHARSET: utf8mb4
+      MYSQL_COLLATION: utf8mb4_unicode_ci
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ncba-network
+    restart: unless-stopped
+
+  country-integration:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ncba-app
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/countrydb
+      DB_USER: root
+      DB_PASSWORD: root
+      SOAP_URL: http://webservices.oorsprong.org/websamples.countryinfo/CountryInfoService.wso
+      SOAP_CONNECT_TIMEOUT: 3000
+      SOAP_READ_TIMEOUT: 5000
+      JAVA_OPTS: "-Xms512m -Xmx1024m -XX:+UseG1GC"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - ncba-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  ncba-network:
+    driver: bridge
