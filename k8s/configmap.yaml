@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: country-integration-config
+  namespace: ncba-integration
+data:
+  soap.url: "http://webservices.oorsprong.org/websamples.countryinfo/CountryInfoService.wso"
+  soap.connect-timeout-ms: "3000"
+  soap.read-timeout-ms: "5000"
+  management.endpoints.web.exposure.include: "health,info,prometheus,metrics"
+  management.endpoint.health.probes.enabled: "true"
+  spring.jpa.hibernate.ddl-auto: "update"
+  spring.jpa.open-in-view: "false"
+  spring.cache.cache-names: "isoCodes"
+  spring.cache.caffeine.spec: "maximumSize=500,expireAfterWrite=24h"
